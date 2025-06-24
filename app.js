@@ -16,11 +16,45 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDrawing = false;
     const EMPTY_CHAR = ' ';
 
-    // ::NEW:: Tool state
-    let activeTool = 'draw'; // 'draw' or 'box'
+    // Tool state
+    let activeTool = 'draw';
     let selectedChar = '#';
     let boxStartX, boxStartY;
     let gridSnapshot = [];
+
+    // ::NEW:: History state
+    let undoStack = [];
+    let redoStack = [];
+    const MAX_HISTORY_SIZE = 50;
+
+    // ::NEW:: Saves the current grid state for the undo stack
+    function saveStateForUndo() {
+        redoStack = []; // A new action clears the redo stack
+        if (undoStack.length >= MAX_HISTORY_SIZE) {
+            undoStack.shift(); // Limit history size to prevent memory issues
+        }
+        undoStack.push(JSON.parse(JSON.stringify(gridState)));
+    }
+
+    // ::NEW:: Undo function
+    function undo() {
+        if (undoStack.length === 0) return;
+        const lastState = undoStack.pop();
+        redoStack.push(JSON.parse(JSON.stringify(gridState))); // Save current state for redo
+        gridState = lastState;
+        renderGridFromState();
+        updateOutputText();
+    }
+
+    // ::NEW:: Redo function
+    function redo() {
+        if (redoStack.length === 0) return;
+        const nextState = redoStack.pop();
+        undoStack.push(JSON.parse(JSON.stringify(gridState))); // Save current state for undo
+        gridState = nextState;
+        renderGridFromState();
+        updateOutputText();
+    }
 
 
     function createGrid(width, height) {
@@ -32,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         gridState = Array.from({ length: h }, () => Array(w).fill(EMPTY_CHAR));
         renderGridFromState();
         updateOutputText();
+        // Clear history for new grid
+        undoStack = [];
+        redoStack = [];
     }
 
     function renderGridFromState() {
@@ -54,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         outputArea.value = `\`\`\`\n${rawText}\n\`\`\``;
     }
 
-    // ::NEW:: Box drawing logic
     function drawBox(x1, y1, x2, y2) {
         const minX = Math.min(x1, x2);
         const maxX = Math.max(x1, x2);
@@ -85,13 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeTool === 'draw') {
             if (gridState[row][col] === selectedChar) return;
             gridState[row][col] = selectedChar;
-            cell.textContent = selectedChar; // Direct update for performance
+            cell.textContent = selectedChar;
             updateOutputText();
         } else if (activeTool === 'box' && isDrawing) {
-            // Restore snapshot and draw new box preview
             gridState = JSON.parse(JSON.stringify(gridSnapshot));
             drawBox(boxStartX, boxStartY, col, row);
-            renderGridFromState(); // Re-render for box preview
+            renderGridFromState();
             updateOutputText();
         }
     }
@@ -99,17 +134,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Event Listeners ---
 
     createGridBtn.addEventListener('click', () => createGrid(widthInput.value, heightInput.value));
-    clearGridBtn.addEventListener('click', () => createGrid(widthInput.value, heightInput.value));
+    
+    clearGridBtn.addEventListener('click', () => {
+        // ::MODIFIED:: Save state before clearing
+        saveStateForUndo();
+        // Re-initialize the grid state, but keep dimensions
+        gridState = Array.from({ length: gridState.length }, () => Array(gridState[0].length).fill(EMPTY_CHAR));
+        renderGridFromState();
+        updateOutputText();
+    });
 
     palette.addEventListener('click', (e) => {
         if (e.target.classList.contains('tool')) {
             const toolType = e.target.dataset.tool;
             activeTool = toolType;
-
             if (toolType === 'draw') {
                 selectedChar = e.target.dataset.char;
             }
-
             palette.querySelector('.active-tool')?.classList.remove('active-tool');
             e.target.classList.add('active-tool');
         }
@@ -137,14 +178,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     gridContainer.addEventListener('mousedown', (e) => {
         e.preventDefault();
+        if (!e.target.closest('span[data-row]')) return;
+
+        // ::MODIFIED:: Save state at the beginning of any drawing action
+        saveStateForUndo();
         isDrawing = true;
-        const cell = e.target.closest('span[data-row]');
-        if (!cell) return;
 
         if (activeTool === 'box') {
+            const cell = e.target.closest('span[data-row]');
             boxStartX = parseInt(cell.dataset.col, 10);
             boxStartY = parseInt(cell.dataset.row, 10);
-            // Deep copy for snapshot
             gridSnapshot = JSON.parse(JSON.stringify(gridState));
         }
         handleDraw(e);
@@ -159,9 +202,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('mouseup', () => {
         if (isDrawing) {
             isDrawing = false;
-            boxStartX = null;
-            boxStartY = null;
             gridSnapshot = [];
+        }
+    });
+
+    // ::NEW:: Keyboard shortcuts for Undo/Redo
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) { // metaKey for macOS
+            if (e.key === 'z') {
+                e.preventDefault();
+                undo();
+            } else if (e.key === 'y') {
+                e.preventDefault();
+                redo();
+            }
         }
     });
 
