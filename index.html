@@ -13,13 +13,50 @@
         <input type="number" id="width-input" value="40" min="1" max="150">
         <label for="height-input">Height:</label>
         <input type="number" id="height-input" value="20" min="1" max="150">
-        <button id="create-grid-btn">Create / Resize Grid</button>
+        <button id="create-grid-btn">Create / Resize</button>
+        <button id="clear-grid-btn">Clear Grid</button>
+    </div>
+
+    <!-- ::NEW:: Character Palette -->
+    <div id="palette">
+        <div class="palette-section">
+            <h3>Tools</h3>
+            <span class="tool active-tool" data-char="#">#</span>
+            <span class="tool" data-char=" ">Eraser</span>
+        </div>
+        <div class="palette-section">
+            <h3>Lines & Blocks</h3>
+            <span class="tool" data-char="/">/</span>
+            <span class="tool" data-char="\">\\</span>
+            <span class="tool" data-char="_">_</span>
+            <span class="tool" data-char="|">|</span>
+            <span class="tool" data-char="-">-</span>
+            <span class="tool" data-char="█">█</span>
+            <span class="tool" data-char="░">░</span>
+            <span class="tool" data-char="▒">▒</span>
+            <span class="tool" data-char="▓">▓</span>
+        </div>
+        <div class="palette-section">
+            <h3>Moons</h3>
+            <span class="tool" data-char="🌕">🌕</span>
+            <span class="tool" data-char="🌖">🌖</span>
+            <span class="tool" data-char="🌗">🌗</span>
+            <span class="tool" data-char="🌘">🌘</span>
+            <span class="tool" data-char="🌑">🌑</span>
+            <span class="tool" data-char="🌒">🌒</span>
+            <span class="tool" data-char="🌓">🌓</span>
+            <span class="tool" data-char="🌔">🌔</span>
+        </div>
     </div>
 
     <div id="grid-container"></div>
 
     <div class="output-container">
-        <h2>Output</h2>
+        <div class="output-header">
+            <h2>Output</h2>
+            <!-- ::NEW:: Copy Button -->
+            <button id="copy-btn">Copy</button>
+        </div>
         <textarea id="output" readonly rows="10" cols="50"></textarea>
     </div>
 
