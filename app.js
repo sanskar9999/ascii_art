@@ -3,17 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const widthInput = document.getElementById('width-input');
     const heightInput = document.getElementById('height-input');
     const createGridBtn = document.getElementById('create-grid-btn');
-    const clearGridBtn = document.getElementById('clear-grid-btn'); // New
+    const clearGridBtn = document.getElementById('clear-grid-btn');
     const gridContainer = document.getElementById('grid-container');
     const outputArea = document.getElementById('output');
-    const palette = document.getElementById('palette'); // New
-    const copyBtn = document.getElementById('copy-btn'); // New
+    const palette = document.getElementById('palette');
+    const copyBtn = document.getElementById('copy-btn');
+    const customCharInput = document.getElementById('custom-char-input');
+    const addCharBtn = document.getElementById('add-char-btn');
 
     // Application State
     let gridState = [];
     let isDrawing = false;
-    let selectedChar = '#'; // Default character
     const EMPTY_CHAR = ' ';
+
+    // ::NEW:: Tool state
+    let activeTool = 'draw'; // 'draw' or 'box'
+    let selectedChar = '#';
+    let boxStartX, boxStartY;
+    let gridSnapshot = [];
+
 
     function createGrid(width, height) {
         const w = Math.max(1, Math.min(150, parseInt(width, 10)));
@@ -22,12 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         heightInput.value = h;
 
         gridState = Array.from({ length: h }, () => Array(w).fill(EMPTY_CHAR));
-        renderGrid();
+        renderGridFromState();
         updateOutputText();
     }
 
-    // ::NEW:: Renders the entire grid based on gridState
-    function renderGrid() {
+    function renderGridFromState() {
         gridContainer.innerHTML = '';
         gridContainer.style.gridTemplateColumns = `repeat(${gridState[0].length}, 1fr)`;
 
@@ -44,65 +51,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateOutputText() {
         const rawText = gridState.map(row => row.join('')).join('\n');
-        // ::NEW:: Add backticks for code block formatting
         outputArea.value = `\`\`\`\n${rawText}\n\`\`\``;
     }
 
+    // ::NEW:: Box drawing logic
+    function drawBox(x1, y1, x2, y2) {
+        const minX = Math.min(x1, x2);
+        const maxX = Math.max(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxY = Math.max(y1, y2);
+
+        for (let r = minY; r <= maxY; r++) {
+            for (let c = minX; c <= maxX; c++) {
+                let char = ' ';
+                if (r === minY && c === minX) char = '┌';
+                else if (r === minY && c === maxX) char = '┐';
+                else if (r === maxY && c === minX) char = '└';
+                else if (r === maxY && c === maxX) char = '┘';
+                else if (r === minY || r === maxY) char = '─';
+                else if (c === minX || c === maxX) char = '│';
+                gridState[r][c] = char;
+            }
+        }
+    }
+
     function handleDraw(event) {
-        if (!event.target.matches('span[data-row]')) return;
+        const cell = event.target.closest('span[data-row]');
+        if (!cell) return;
 
-        const row = event.target.dataset.row;
-        const col = event.target.dataset.col;
+        const row = parseInt(cell.dataset.row, 10);
+        const col = parseInt(cell.dataset.col, 10);
 
-        // Prevent drawing the same character repeatedly
-        if (gridState[row][col] === selectedChar) return;
-
-        // Update state
-        gridState[row][col] = selectedChar;
-
-        // Update view (only the changed cell)
-        event.target.textContent = selectedChar;
-        updateOutputText();
+        if (activeTool === 'draw') {
+            if (gridState[row][col] === selectedChar) return;
+            gridState[row][col] = selectedChar;
+            cell.textContent = selectedChar; // Direct update for performance
+            updateOutputText();
+        } else if (activeTool === 'box' && isDrawing) {
+            // Restore snapshot and draw new box preview
+            gridState = JSON.parse(JSON.stringify(gridSnapshot));
+            drawBox(boxStartX, boxStartY, col, row);
+            renderGridFromState(); // Re-render for box preview
+            updateOutputText();
+        }
     }
 
     // --- Event Listeners ---
 
-    createGridBtn.addEventListener('click', () => {
-        createGrid(widthInput.value, heightInput.value);
-    });
+    createGridBtn.addEventListener('click', () => createGrid(widthInput.value, heightInput.value));
+    clearGridBtn.addEventListener('click', () => createGrid(widthInput.value, heightInput.value));
 
-    // ::NEW:: Clear Grid Button
-    clearGridBtn.addEventListener('click', () => {
-        createGrid(widthInput.value, heightInput.value);
-    });
-
-    // ::NEW:: Palette Logic
     palette.addEventListener('click', (e) => {
         if (e.target.classList.contains('tool')) {
-            // Update selected character
-            selectedChar = e.target.dataset.char;
+            const toolType = e.target.dataset.tool;
+            activeTool = toolType;
 
-            // Update active tool style
-            palette.querySelector('.active-tool').classList.remove('active-tool');
+            if (toolType === 'draw') {
+                selectedChar = e.target.dataset.char;
+            }
+
+            palette.querySelector('.active-tool')?.classList.remove('active-tool');
             e.target.classList.add('active-tool');
         }
     });
 
-    // ::NEW:: Copy Button Logic
+    addCharBtn.addEventListener('click', () => {
+        const char = customCharInput.value;
+        if (char) {
+            const newTool = document.createElement('span');
+            newTool.className = 'tool';
+            newTool.dataset.tool = 'draw';
+            newTool.dataset.char = char;
+            newTool.textContent = char;
+            customCharInput.parentElement.appendChild(newTool);
+            customCharInput.value = '';
+        }
+    });
+
     copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(outputArea.value).then(() => {
             copyBtn.textContent = 'Copied!';
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy';
-            }, 2000); // Reset text after 2 seconds
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-        });
+            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        }).catch(err => console.error('Failed to copy text: ', err));
     });
 
     gridContainer.addEventListener('mousedown', (e) => {
-        e.preventDefault(); // Prevents text selection drag behavior
+        e.preventDefault();
         isDrawing = true;
+        const cell = e.target.closest('span[data-row]');
+        if (!cell) return;
+
+        if (activeTool === 'box') {
+            boxStartX = parseInt(cell.dataset.col, 10);
+            boxStartY = parseInt(cell.dataset.row, 10);
+            // Deep copy for snapshot
+            gridSnapshot = JSON.parse(JSON.stringify(gridState));
+        }
         handleDraw(e);
     });
 
@@ -113,11 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('mouseup', () => {
-        isDrawing = false;
-    });
-
-    gridContainer.addEventListener('mouseleave', () => {
-        isDrawing = false;
+        if (isDrawing) {
+            isDrawing = false;
+            boxStartX = null;
+            boxStartY = null;
+            gridSnapshot = [];
+        }
     });
 
     // Initial grid creation
