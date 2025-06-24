@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>ASCII Art Editor</h1>
+    <div class="controls">
+        <label for="width-input">Width:</label>
+        <input type="number" id="width-input" value="40" min="1" max="150">
+        <label for="height-input">Height:</label>
+        <input type="number" id="height-input" value="20" min="1" max="150">
+        <button id="create-grid-btn">Create / Resize Grid</button>
+    </div>
+
+    <div id="grid-container"></div>
+
+    <div class="output-container">
+        <h2>Output</h2>
+        <textarea id="output" readonly rows="10" cols="50"></textarea>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
