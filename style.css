@@ -1,0 +1,73 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.controls input {
+    width: 60px;
+    padding: 5px;
+}
+
+.controls button {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+#grid-container {
+    display: grid;
+    border: 2px solid #333;
+    background-color: #fff;
+    /* This will be set by JavaScript */
+    /* grid-template-columns: repeat(var(--grid-width), 1fr); */
+}
+
+#grid-container span {
+    width: 15px;
+    height: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 14px;
+    box-shadow: 0 0 0 1px #eee; /* Light grid lines */
+    user-select: none; /* Prevents text selection when drawing */
+    cursor: crosshair;
+}
+
+.output-container {
+    margin-top: 20px;
+    width: 80%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#output {
+    width: 100%;
+    padding: 10px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    background-color: #e9e9e9;
+    border: 1px solid #ccc;
+    resize: vertical;
+}
