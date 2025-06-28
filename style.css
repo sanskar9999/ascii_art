@@ -35,7 +35,8 @@ h1 {
 
 #palette {
     display: flex;
-    gap: 20px;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 20px;
     background-color: #fff;
     padding: 10px 20px;
@@ -45,17 +46,11 @@ h1 {
     justify-content: center;
 }
 
-.palette-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.palette-section h3 {
-    margin: 0;
-    font-size: 14px;
-    color: #606770;
-    margin-right: 10px;
+.separator {
+    width: 1px;
+    height: 25px;
+    background-color: #ddd;
+    margin: 0 10px;
 }
 
 .tool {
@@ -77,7 +72,12 @@ h1 {
     border-color: #4267B2;
 }
 
-/* ::NEW:: Custom Character Styles */
+#custom-char-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 #custom-char-input {
     width: 40px;
     padding: 5px;
@@ -95,6 +95,49 @@ h1 {
     font-size: 18px;
 }
 
+.expandable-palettes {
+    width: 80%;
+    max-width: 800px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+details {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+summary {
+    padding: 10px 15px;
+    font-weight: bold;
+    cursor: pointer;
+    list-style: none;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+summary::before {
+    content: '▶ ';
+    font-size: 0.8em;
+    transition: transform 0.2s;
+}
+
+details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+.sub-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+    gap: 5px;
+    padding: 15px;
+    border-top: 1px solid #ccc;
+}
 
 #grid-container {
     display: grid;
@@ -103,8 +146,8 @@ h1 {
 }
 
 #grid-container span {
-    width: 20px;
-    height: 20px;
+    width: var(--cell-width, 20px);
+    height: var(--cell-height, 20px);
     display: flex;
     justify-content: center;
     align-items: center;

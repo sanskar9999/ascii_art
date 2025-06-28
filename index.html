@@ -10,47 +10,45 @@
     <h1>ASCII Art Editor</h1>
     <div class="controls">
         <label for="width-input">Width:</label>
-        <input type="number" id="width-input" value="40" min="1" max="150">
+        <input type="number" id="width-input" value="36" min="1" max="150">
         <label for="height-input">Height:</label>
-        <input type="number" id="height-input" value="20" min="1" max="150">
+        <input type="number" id="height-input" value="17" min="1" max="150">
         <button id="create-grid-btn">Create / Resize</button>
         <button id="clear-grid-btn">Clear Grid</button>
     </div>
 
+    <!-- ::MODIFIED:: Reverted to a single-row palette with separators -->
     <div id="palette">
-        <div class="palette-section">
-            <h3>Tools</h3>
-            <!-- ::NEW:: Box tool -->
-            <span class="tool" data-tool="box">Box</span>
-            <span class="tool active-tool" data-tool="draw" data-char="#">#</span>
-            <span class="tool" data-tool="draw" data-char=" ">Eraser</span>
-        </div>
-        <div class="palette-section">
-            <h3>Lines & Blocks</h3>
-            <!-- ::NEW:: More characters -->
-            <span class="tool" data-tool="draw" data-char="─">─</span>
-            <span class="tool" data-tool="draw" data-char="│">│</span>
-            <span class="tool" data-tool="draw" data-char="┌">┌</span>
-            <span class="tool" data-tool="draw" data-char="┐">┐</span>
-            <span class="tool" data-tool="draw" data-char="└">└</span>
-            <span class="tool" data-tool="draw" data-char="┘">┘</span>
-            <span class="tool" data-tool="draw" data-char="█">█</span>
-            <span class="tool" data-tool="draw" data-char="░">░</span>
-        </div>
-        <div class="palette-section">
-            <h3>Moons</h3>
-            <span class="tool" data-tool="draw" data-char="🌕">🌕</span>
-            <span class="tool" data-tool="draw" data-char="🌗">🌗</span>
-            <span class="tool" data-tool="draw" data-char="🌑">🌑</span>
-            <span class="tool" data-tool="draw" data-char="🌓">🌓</span>
-        </div>
-        <!-- ::NEW:: Custom Character Input -->
-        <div class="palette-section" id="custom-char-section">
-            <h3>Custom</h3>
+        <span class="tool" data-tool="box">Box</span>
+        <span class="tool" data-tool="draw" data-char="#">#</span>
+        <span class="tool" data-tool="draw" data-char=" ">Eraser</span>
+
+        <span class="separator"></span>
+
+        <span class="tool" data-tool="draw" data-char="░">░</span>
+        <span class="tool" data-tool="draw" data-char="▒">▒</span>
+        <span class="tool" data-tool="draw" data-char="▓">▓</span>
+        <span class="tool active-tool" data-tool="draw" data-char="█">█</span>
+
+        <span class="separator"></span>
+        
+        <div id="custom-char-section">
             <input type="text" id="custom-char-input" placeholder="Char" maxlength="2">
             <button id="add-char-btn">+</button>
         </div>
     </div>
+
+    <div class="expandable-palettes">
+        <details>
+            <summary>Lines & Box Drawing</summary>
+            <div id="lines-palette" class="sub-palette"></div>
+        </details>
+        <details>
+            <summary>Block Elements</summary>
+            <div id="blocks-palette" class="sub-palette"></div>
+        </details>
+    </div>
+
 
     <div id="grid-container"></div>
 
